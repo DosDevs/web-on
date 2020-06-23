@@ -1,8 +1,8 @@
 all: webon
 
-CLANG=/usr/local/bin/clang10
+CLANG=/usr/local/bin/clang++10
 COMPILE=$(CLANG) -std=c++20 -c
-LINK=$(CLANG) -lc++
+LINK=$(CLANG)
 
 .SUFFIXES: .c++ .o
 
@@ -12,7 +12,7 @@ LINK=$(CLANG) -lc++
 
 webon: main.o
 	echo Linking $?
-	$(LINK) $? -o $@
+	$(LINK) $? -o $@ -lpthread
 
 PHONY: clean
 
