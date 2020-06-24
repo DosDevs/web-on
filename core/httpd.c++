@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "address.h"
 #include "httpd.h"
@@ -68,39 +69,6 @@ int httpd::accept(IPv4& client_address, Port16& client_port) const
   }
 
   return result;
-}
-
-int httpd::receive(int handle)
-{
-  std::cout << "Received new connection with file handle " << handle << "." << std::endl;
-
-  _threads.push_back(std::thread(&thread_main, handle));
-
-  return 0;
-}
-
-void httpd::thread_main(int handle)
-{
-  FILE* file = fdopen(handle, "rw");
-  std::string line;
-
-  for ever
-  {
-    switch (int ch = getc(file); ch)
-    {
-      case EOF:
-        return;
-
-      case '\n':
-        std::cout << "[" << handle << "] " << line << std::endl;
-        line.clear();
-        break;
-
-      default:
-        line.push_back(char(ch));
-        break;
-    }
-  }
 }
 
 int httpd::Close() const
