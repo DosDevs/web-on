@@ -16,7 +16,15 @@ namespace webon
 
     inline constexpr uint32_t makeui32(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     {
-      return (uint32_t(a) << 24) | (b << 16) | (c << 8) | d;
+      return (uint32_t(a) << 24) | (uint32_t(b) << 16) | (uint32_t(c) << 8) | uint32_t(d);
+    }
+
+    inline constexpr int get_octet(uint32_t value, int i)
+    {
+      if ((i < 0) || (i > 3))
+        return 0;
+
+      return ((value >> (i * 8)) & 0xff);
     }
 
     class IPv4
@@ -44,6 +52,18 @@ namespace webon
                   std::to_string((big_endian >> 24) & 0xff));
         }
     };
+
+    template<typename Stream>
+    inline constexpr Stream& operator<<(Stream& stream, IPv4 const& address)
+    {
+      int big_endian = htonl(address);
+
+      return (
+          stream << get_octet(big_endian, 0) << "."
+                 << get_octet(big_endian, 1) << "."
+                 << get_octet(big_endian, 2) << "."
+                 << get_octet(big_endian, 3));
+    }
 
     class Port16
     {

@@ -8,19 +8,19 @@
 
 #include "httpd.h"
 
-webon::httpd *globalHttp;
+webon::httpd *Global_Httpd;
 
 void signalHandler(int signal)
 {
   std::cout << "Shutting down..." << std::endl;
-  globalHttp->Close();
+  Global_Httpd->Close();
   exit(1);
 }
 
 int main()
 {
-  webon::httpd httpd{webon::address::IPv4{}, webon::address::Port16{80}};
-  globalHttp = &httpd;
+  webon::httpd httpd{webon::address::Port16{8080}};
+  Global_Httpd = &httpd;
 
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = signalHandler;
