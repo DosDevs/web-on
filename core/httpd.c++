@@ -86,13 +86,21 @@ void httpd::thread_main(int handle)
   }
 }
 
+int httpd::Close() const
+{ 
+  return invoke_socket_api("closing socket", false, &::close, _socket);
+}
+
 int httpd::Start()
 {
   int r;
 
   if ((r = create_socket()) == -1) return r;
   if ((r = bind()) == -1) return r;
-  if ((r = listen()) == -1) return r;
+  if ((r = listen()) == -1) {
+    Close();
+    return r;
+  }
 
   std::cout << "Now listening on port " << uint16_t(_port) << "." << std::endl;
 

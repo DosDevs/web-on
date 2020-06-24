@@ -2,6 +2,8 @@
 #define WEBON__HTTPD_H__INCLUDED
 
 #include <cstdint>
+#include <string.h>
+#include <errno.h>
 
 #include "address.h"
 
@@ -25,7 +27,7 @@ namespace webon
 
         if (result == -1)
         {
-          std::cout << "There was an error " << activity_message << ": " << errno << "." << std::endl;
+          std::cout << "There was an error " << activity_message << ": " << strerror(errno) << " (" << errno << ")" << "." << std::endl;
           return 1;
         }
 
@@ -52,6 +54,7 @@ namespace webon
       {}
 
       int Start();
+      int Close() const;
   };
 }  // namespace webon
 
