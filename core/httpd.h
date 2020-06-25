@@ -30,36 +30,14 @@ namespace webon
       int accept(IPv4& client_address, Port16& client_port) const;
 
     public:
-      explicit httpd(address::IPv4 address, address::Port16 port):
-          _address{address},
-          _port{port},
-          _socket{-1},
-          _threads{}
-      {}
-
-      explicit httpd(address::IPv4 address):
-          _address{address},
-          _port{80},
-          _socket{-1},
-          _threads{}
-      {}
-
-      explicit httpd(address::Port16 port):
-          _address{},
-          _port{port},
-          _socket{-1},
-          _threads{}
-      {}
-
-      explicit httpd():
-          _address{},
-          _port{80},
-          _socket{-1},
-          _threads{}
-      {}
+      explicit httpd(address::IPv4 address, address::Port16 port);
+      explicit httpd(address::IPv4 address);
+      explicit httpd(address::Port16 port);
+      explicit httpd();
+      ~httpd();
 
       int Start();
-      int Close() const;
+      int Close();
   };
 }  // namespace webon
 

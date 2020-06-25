@@ -1,4 +1,6 @@
 #include <iostream>
+#include <memory>
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -8,19 +10,23 @@
 
 #include "httpd.h"
 
-webon::httpd *Global_Httpd;
+std::unique_ptr<webon::httpd> Global_Httpd;
 
 void signalHandler(int signal)
 {
   std::cout << "Shutting down..." << std::endl;
+
+  if (!Global_Httpd)
+    return;
+
+
   Global_Httpd->Close();
   exit(1);
 }
 
 int main()
 {
-  webon::httpd httpd{webon::address::Port16{8080}};
-  Global_Httpd = &httpd;
+  Global_Httpd = std::make_unique<webon::httpd>(webon::address::Port16{8080});
 
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = signalHandler;
@@ -28,9 +34,9 @@ int main()
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
 
-  if (int r = httpd.Start(); r != 0)
+  if (int r = Global_Httpd->Start(); r != 0)
   {
-    std::cout << "There was an error starting web server: " << strerror(r) << " (" << r << ")" << "." << std::endl;
+    std::cout << "There was an error starting web server: " << strerror(errno) << " (" << errno << ")" << "." << std::endl;
     return r;
   }
 

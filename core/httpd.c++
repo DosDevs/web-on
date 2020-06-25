@@ -34,9 +34,49 @@ namespace {
   }
 }
 
+httpd::httpd(address::IPv4 address, address::Port16 port):
+    _address{address},
+    _port{port},
+    _socket{-1},
+    _threads{}
+{}
+
+httpd::httpd(address::IPv4 address):
+    _address{address},
+    _port{80},
+    _socket{-1},
+    _threads{}
+{}
+
+httpd::httpd(address::Port16 port):
+    _address{},
+    _port{port},
+    _socket{-1},
+    _threads{}
+{}
+
+httpd::httpd():
+    _address{},
+    _port{80},
+    _socket{-1},
+    _threads{}
+{}
+
+httpd::~httpd()
+{
+  Close();
+}
+
 int httpd::create_socket()
 {
-  return _socket = invoke_socket_api("creating socket", true, &::socket, PF_INET, SOCK_STREAM, 0);
+  _socket = invoke_socket_api("creating socket", true, &::socket, PF_INET, SOCK_STREAM, 0);
+
+  if (_socket > -1)
+    std::cout << "Created socket " << _socket << std::endl;
+  else
+    std::cout << "There was an error creating socket: " << errno << std::endl;
+
+  return _socket;
 }
 
 int httpd::bind() const
@@ -71,9 +111,20 @@ int httpd::accept(IPv4& client_address, Port16& client_port) const
   return result;
 }
 
-int httpd::Close() const
+int httpd::Close()
 { 
-  return invoke_socket_api("closing socket", false, &::close, _socket);
+  if (_socket == -1)
+    return 0;
+
+  std::cout << "Closing socket " << _socket << "." << std::endl;
+  int result = invoke_socket_api("closing socket", false, &::close, _socket);
+
+  if (result == 0)
+    _socket = -1;
+  else
+    std::cout << "There was an error closing socket " << _socket << ": " << errno << std::endl;
+
+  return result;
 }
 
 int httpd::Start()
