@@ -150,5 +150,7 @@ int httpd::Start()
     Worker worker{_address, _port, client_address, client_port, r};
     _threads.push_back(std::thread(&Worker::Thread_Main, std::move(worker)));
   }
+
+  return 0;
 }
 

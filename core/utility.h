@@ -8,6 +8,13 @@
 
 namespace webon
 {
+  using std::string_view;
+
+  constexpr bool String_Begins_With(string_view a, string_view b)
+  {
+    return ((a.length() > b.length()) && (a.substr(0, b.length()) == b));
+  }
+
   inline constexpr char CR = 13;
   inline constexpr char LF = 10;
   inline constexpr char SP = 32;

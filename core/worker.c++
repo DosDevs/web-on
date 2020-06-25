@@ -55,7 +55,7 @@ void Worker::Thread_Main(Worker&& worker)
 
 void Worker::go() const
 {
-  webon::Request request;
+  std::unique_ptr<Request> request;
   string line;
   bool cr = false;
   bool done = false;
@@ -78,10 +78,15 @@ void Worker::go() const
         {
           cr = false;
 
+          if (!request)
+          {
+            request = Request::Create(line);
+            std::cout << "Created new request object: " << request.get() << std::endl;
+          } else
           if (line.empty())
             done = true;
           else
-            request += std::move(line);
+            request->Add(std::move(line));
         }
 
         break;
@@ -97,6 +102,6 @@ void Worker::go() const
     }
   }
 
-  std::cout << "[" << _handle << "] REQUEST:" << request << std::endl;
+  std::cout << "[" << _handle << "] REQUEST:" << *request << std::endl;
 }
 

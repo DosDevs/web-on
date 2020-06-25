@@ -10,7 +10,7 @@ LINK=$(CLANG)
 	echo Compiling $? using $(CLANG)
 	$(COMPILE) $?
 
-webon: main.o httpd.o worker.o
+webon: main.o httpd.o worker.o request.o
 	echo Linking $?
 	$(LINK) $? -o $@ -lpthread
 
