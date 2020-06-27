@@ -10,10 +10,10 @@
 
 namespace webon
 {
+  using std::string;
+
   namespace address
   {
-    using std::string;
-
     inline constexpr uint32_t makeui32(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     {
       return (uint32_t(a) << 24) | (uint32_t(b) << 16) | (uint32_t(c) << 8) | uint32_t(d);

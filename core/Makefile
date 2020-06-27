@@ -7,7 +7,7 @@ LINK=$(CLANG)
 .SUFFIXES: .c++ .o
 
 .c++.o:
-	echo Compiling $? using $(CLANG)
+	echo Compiling $?
 	$(COMPILE) $?
 
 webon: main.o httpd.o worker.o request.o

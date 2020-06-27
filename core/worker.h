@@ -14,6 +14,8 @@ namespace webon
   class Worker
   {
     private:
+      static bool _should_run;
+
       IPv4 _server_address;
       Port16 _server_port;
 
@@ -36,6 +38,7 @@ namespace webon
       ~Worker();
 
       static void Thread_Main(Worker&& worker);
+      static void End_All();
   };
 }  // namespace webon
 

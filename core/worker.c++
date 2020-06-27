@@ -3,10 +3,14 @@
 #include <iomanip>
 #include <iostream>
 
+#include <unistd.h>
+
 #include "request.h"
 #include "utility.h"
 
 using webon::Worker;
+
+bool Worker::_should_run = true;
 
 Worker::Worker(
     IPv4 server_address,
@@ -43,14 +47,22 @@ Worker::~Worker()
   if (!_file)
     return;
 
-  std::cout << "[" << _handle << "] Thread has ended." << std::endl;
+  std::cout << "[" << _handle << "] Worker has ended." << std::endl;
 
   fclose(_file);
+
+  _file = nullptr;
+  _handle = -1;
 }
 
 void Worker::Thread_Main(Worker&& worker)
 {
   worker.go();
+}
+
+void Worker::End_All()
+{
+  _should_run = false;
 }
 
 void Worker::go() const
@@ -60,7 +72,7 @@ void Worker::go() const
   bool cr = false;
   bool done = false;
 
-  while (!done)
+  while (!done && _should_run)
   {
     int ch = getc(_file);
 
@@ -80,13 +92,16 @@ void Worker::go() const
 
           if (!request)
           {
-            request = Request::Create(line);
-            std::cout << "Created new request object: " << request.get() << std::endl;
+            request = Request::Create(std::move(line));
+            line.clear();
           } else
           if (line.empty())
+          {
             done = true;
-          else
+          } else {
             request->Add(std::move(line));
+            line.clear();
+          }
         }
 
         break;
@@ -102,6 +117,6 @@ void Worker::go() const
     }
   }
 
-  std::cout << "[" << _handle << "] REQUEST:" << *request << std::endl;
+  std::cout << "[" << _handle << "] Request:" << *request << std::endl;
 }
 

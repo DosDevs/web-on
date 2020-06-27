@@ -3,17 +3,13 @@
 
 #define ever (;;)
 
-#define SHOW(N)                                 \
+#define SHOW(N)                                         \
   std::cout << #N << ": <" << (N) << ">" << std::endl;  \
 
 namespace webon
 {
+  using std::string;
   using std::string_view;
-
-  constexpr bool String_Begins_With(string_view a, string_view b)
-  {
-    return ((a.length() > b.length()) && (a.substr(0, b.length()) == b));
-  }
 
   inline constexpr char CR = 13;
   inline constexpr char LF = 10;
@@ -21,6 +17,23 @@ namespace webon
   inline constexpr char HT = 9;
   inline constexpr char QM = 34;
   inline constexpr char DEL = 127;
+  inline constexpr char SPACES[] = { SP, HT, 0 };
+
+  inline constexpr bool String_Begins_With(string_view a, string_view b)
+  {
+    return ((a.length() > b.length()) && (a.substr(0, b.length()) == b));
+  }
+
+  inline constexpr string_view trim(string_view s)
+  {
+    auto const first = s.find_first_not_of(SPACES);
+    auto const last = s.find_last_not_of(SPACES);
+
+    if ((first == string::npos) || (last == string::npos))
+      return "";
+
+    return s.substr(first, last - first + 1);
+  }
 
   inline constexpr bool is_char(int value)
   {
