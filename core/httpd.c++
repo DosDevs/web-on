@@ -4,13 +4,12 @@
 #include <thread>
 
 #include <netinet/in.h>
-#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <termios.h>
 #include <unistd.h>
 
 #include "address.h"
+#include "console-helper.h"
 #include "httpd.h"
 #include "worker.h"
 #include "utility.h"
@@ -66,7 +65,7 @@ httpd::httpd():
 
 httpd::~httpd()
 {
-  Close();
+  Stop();
 }
 
 int httpd::create_socket()
@@ -113,8 +112,16 @@ int httpd::accept(IPv4& client_address, Port16& client_port) const
   return result;
 }
 
-int httpd::Close()
+int httpd::Stop()
 { 
+  console::Uninitialize();
+  Worker::End_All();
+
+  for (auto& thread: _threads)
+    thread.join();
+
+  _threads.clear();
+
   if (_socket == -1)
     return 0;
 
@@ -136,43 +143,21 @@ int httpd::Start()
   if ((r = create_socket()) < 0) return r;
   if ((r = bind()) != 0) return r;
   if ((r = listen()) < 0) {
-    Close();
+    Stop();
     return r;
   }
 
   std::cout << "Now listening on port " << uint16_t(_port) << "." << std::endl;
 
-  termios ttystate;
-  tcgetattr(STDIN_FILENO, &ttystate);
-
-  termios ttysave = ttystate;
-  ttystate.c_lflag &= ~(ICANON | ECHO);
-  ttystate.c_cc[VMIN] = 1;
-
-  tcsetattr(STDIN_FILENO, TCSANOW, &ttystate);
-
+  console::Initialize();
   int sleep_micros = 0;
 
   for ever
   {
-    char ch = 0;
+    int ch = console::Check_For_Key_Press();
 
-    fd_set readset;
-    FD_ZERO(&readset);
-    FD_SET(fileno(stdin), &readset);
-
-    timeval tv {
-      .tv_sec = 1,
-      .tv_usec = 0
-    };
-
-    select(fileno(stdin) + 1, &readset, nullptr, nullptr, &tv);
-
-    if(FD_ISSET(fileno(stdin), &readset))
-    {
-      std::cout << "Key was pressed: " << getchar() << ".  Exiting." << std::endl;
+    if (ch != 0)
       break;
-    }
 
     IPv4 client_address;
     Port16 client_port;
@@ -201,14 +186,7 @@ int httpd::Start()
     _threads.push_back(std::thread(&Worker::Thread_Main, std::move(worker)));
   }
 
-  ttystate.c_lflag |= ICANON | ECHO;
-  tcsetattr(STDIN_FILENO, TCSANOW, &ttysave);
-
-  Worker::End_All();
-
-  for (auto& thread: _threads)
-    thread.join();
-
+  Stop();
   return 0;
 }
 

@@ -19,8 +19,7 @@ void signalHandler(int signal)
   if (!Global_Httpd)
     return;
 
-
-  Global_Httpd->Close();
+  Global_Httpd->Stop();
   exit(1);
 }
 

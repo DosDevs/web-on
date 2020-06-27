@@ -10,11 +10,11 @@ LINK=$(CLANG)
 	echo Compiling $?
 	$(COMPILE) $?
 
-webon: main.o httpd.o worker.o request.o
+webon: main.o httpd.o worker.o request.o console-helper.o
 	echo Linking $?
 	$(LINK) $? -o $@ -lpthread
 
 PHONY: clean
 
 clean:
-	rm -rf *.o
+	rm -rfv webon *.o

@@ -37,7 +37,7 @@ namespace webon
       ~httpd();
 
       int Start();
-      int Close();
+      int Stop();
   };
 }  // namespace webon
 
