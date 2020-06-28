@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
+#include <map>
 
 #include "utility.h"
 
@@ -12,6 +14,7 @@ namespace webon
   using std::string;
   using std::string_view;
   using std::vector;
+  using std::map;
 
   enum class Method
   {
@@ -50,9 +53,12 @@ namespace webon
     private:
       string const _protocol;
       vector<string> _rep;
+      map<string, string> _headers;
 
     public:
       static bool Parse_First_Line(string_view first_line, string& method, string& protocol);
+      static bool Parse_Header(string_view line, string& header, string& value);
+
       static Request_Ptr Create(string&& first_line);
 
       Request(string&& protocol):
@@ -75,6 +81,11 @@ namespace webon
       {
         return _rep;
       }
+
+      constexpr map<string, string> const& Headers() const
+      {
+        return _headers;
+      }
   };
 
   template<typename Stream>
@@ -84,8 +95,6 @@ namespace webon
 
     for (auto const& line: request.Lines())
       std::cout << line << std::endl;
-
-    return stream;
   }
 
   class OPTIONS_Request: public Request
