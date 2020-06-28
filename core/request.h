@@ -2,6 +2,7 @@
 #define WEBON__REQUEST_H__INCLUDED
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 #include <memory>
@@ -11,6 +12,7 @@
 
 namespace webon
 {
+  using std::map;
   using std::string;
   using std::string_view;
   using std::vector;
@@ -52,8 +54,10 @@ namespace webon
   {
     private:
       string const _protocol;
-      vector<string> _rep;
       map<string, string> _headers;
+      vector<string> _rep;
+
+      static bool split(string_view line, char separator, string& first, string& second);
 
     public:
       static bool Parse_First_Line(string_view first_line, string& method, string& protocol);
@@ -70,31 +74,37 @@ namespace webon
 
       virtual Method Get_Method() const = 0;
 
-      constexpr string const& Get_Protocol() const
+      string const& Get_Protocol() const
       {
         return _protocol;
       }
 
-      void Add(string&& line);
+      map<string, string> const& Get_Headers() const
+      {
+        return _headers;
+      }
 
-      constexpr vector<string> const& Lines() const
+      vector<string> const& Get_Lines() const
       {
         return _rep;
       }
 
-      constexpr map<string, string> const& Headers() const
-      {
-        return _headers;
-      }
+      void Add(string&& line);
+
   };
 
   template<typename Stream>
-  inline constexpr Stream& operator<<(Stream& stream, Request const& request)
+  inline Stream& operator<<(Stream& stream, Request const& request)
   {
-    std::cout << std::endl << Get_Method_Name(request.Get_Method()) << " / " << request.Get_Protocol() << std::endl;
+    stream << '\n' << Get_Method_Name(request.Get_Method()) << " / " << request.Get_Protocol() << '\n';
 
-    for (auto const& line: request.Lines())
-      std::cout << line << std::endl;
+    for (auto const& item: request.Get_Headers())
+      stream << item.first << ": " << item.second << '\n';
+
+    for (auto const& line: request.Get_Lines())
+      stream << line << '\n';
+
+    return stream;
   }
 
   class OPTIONS_Request: public Request

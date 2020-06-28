@@ -67,56 +67,50 @@ void Worker::End_All()
 
 void Worker::go() const
 {
-  std::unique_ptr<Request> request;
-  string line;
-  bool cr = false;
   bool done = false;
-
-  while (!done && _should_run)
+  while (!done)
   {
-    int ch = getc(_file);
+    std::unique_ptr<Request> request;
+    string line;
 
-    switch (ch)
+    for ever
     {
-      case EOF:
-        return;
+      int ch = getc(_file);
 
-      case '\r':
-        cr = true;
+      if (!_should_run || ch == EOF)
+      {
+        done = true;
         break;
+      }
 
-      case '\n':
-        if (cr)
-        {
-          cr = false;
+      line.push_back(ch);
 
-          if (!request)
-          {
-            request = Request::Create(std::move(line));
-            line.clear();
-          } else
-          if (line.empty())
-          {
-            done = true;
-          } else {
-            request->Add(std::move(line));
-            line.clear();
-          }
-        }
+      size_t length = line.length();
+      if ((length > 1) && (line[length - 2] == '\r') && (line[length - 1] == '\n'))
+      {
+        line.pop_back();
+        line.pop_back();
 
-        break;
+        if (!request)
+          request = Request::Create(std::move(line));
+        else
+        if (!line.empty())
+          request->Add(std::move(line));
 
-      default:
-        if (cr)
-          line.push_back('\r');
-
-        cr = false;
-        line.push_back(char(ch));
-
-        break;
+        line.clear();
+      }
     }
-  }
 
-  std::cout << "[" << _handle << "] Request:" << *request << std::endl;
+    if (!_should_run)
+      break;
+
+    if (!request)
+    {
+      std::cout << "[" << _handle << "] No request." << std::endl;
+      return;
+    }
+
+    std::cout << "[" << _handle << "] Request:" << *request << std::endl;
+  }
 }
 
