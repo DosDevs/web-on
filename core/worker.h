@@ -23,7 +23,6 @@ namespace webon
       Port16 _client_port;
 
       int _handle;
-      FILE* _file;
 
       void go() const;
 

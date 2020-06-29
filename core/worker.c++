@@ -22,8 +22,7 @@ Worker::Worker(
   _server_port{server_port},
   _client_address{client_address},
   _client_port{client_port},
-  _handle{handle},
-  _file{fdopen(_handle, "rw")}
+  _handle{handle}
 {
   std::cout
         << "Received a new connection from " << _client_address << ":" << _client_port
@@ -35,23 +34,19 @@ Worker::Worker(Worker&& that):
   _server_port{std::move(that._server_port)},
   _client_address{std::move(that._client_address)},
   _client_port{std::move(that._client_port)},
-  _handle{that._handle},
-  _file{that._file}
+  _handle{that._handle}
 {
   that._handle = -1;
-  that._file = nullptr;
 }
 
 Worker::~Worker()
 {
-  if (!_file)
+  if (_handle == -1)
     return;
 
-  std::cout << "[" << _handle << "] Worker has ended." << std::endl;
+  std::cout << "[" << _handle << "] Worker has ended; closing socket." << std::endl;
+  close(_handle);
 
-  fclose(_file);
-
-  _file = nullptr;
   _handle = -1;
 }
 
@@ -75,18 +70,30 @@ void Worker::go() const
 
     for ever
     {
-      int ch = getc(_file);
+      char ch = 0;
+      int result = read(_handle, &ch, 1);
 
-      if (!_should_run || ch == EOF)
+      if (!_should_run || (result == 0))
       {
+        std::cout << "Client finished sending data." << std::endl;
         done = true;
+        break;
+      }
+
+      if ((result == -1) && (errno == EAGAIN))
+      {
+        usleep(10000);
+      }
+
+      if (ch == 0)
+      {
+        done = false;
         break;
       }
 
       line.push_back(ch);
 
-      size_t length = line.length();
-      if ((length > 1) && (line[length - 2] == '\r') && (line[length - 1] == '\n'))
+      if (String_Ends_With(line, CRLF))
       {
         line.pop_back();
         line.pop_back();
@@ -104,13 +111,10 @@ void Worker::go() const
     if (!_should_run)
       break;
 
-    if (!request)
+    if (request)
     {
-      std::cout << "[" << _handle << "] No request." << std::endl;
-      return;
+      std::cout << "[" << _handle << "] Request:" << *request << std::endl;
     }
-
-    std::cout << "[" << _handle << "] Request:" << *request << std::endl;
   }
 }
 

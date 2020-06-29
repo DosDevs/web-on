@@ -18,10 +18,16 @@ namespace webon
   inline constexpr char QM = 34;
   inline constexpr char DEL = 127;
   inline constexpr char SPACES[] = { SP, HT, 0 };
+  inline constexpr char CRLF[] = { CR, LF, 0 };
 
   inline constexpr bool String_Begins_With(string_view a, string_view b)
   {
-    return ((a.length() > b.length()) && (a.substr(0, b.length()) == b));
+    return ((a.length() >= b.length()) && (a.substr(0, b.length()) == b));
+  }
+
+  inline constexpr bool String_Ends_With(string_view a, string_view b)
+  {
+    return ((a.length() >= b.length()) && (a.substr(a.length() - b.length()) == b));
   }
 
   inline constexpr string_view trim(string_view s)

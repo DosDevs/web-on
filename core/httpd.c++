@@ -114,24 +114,22 @@ int httpd::accept(IPv4& client_address, Port16& client_port) const
 
 int httpd::Stop()
 { 
-  console::Uninitialize();
   Worker::End_All();
 
   for (auto& thread: _threads)
     thread.join();
 
   _threads.clear();
+  int result = 0;
 
-  if (_socket == -1)
-    return 0;
-
-  std::cout << "Closing socket " << _socket << "." << std::endl;
-  int result = invoke_socket_api("closing socket", false, &::close, _socket);
-
-  if (result == 0)
+  if (_socket != -1)
+  {
+    std::cout << "Closing socket " << _socket << "." << std::endl;
+    result = invoke_socket_api("closing socket", false, &::close, _socket);
     _socket = -1;
-  else
-    std::cout << "There was an error closing socket " << _socket << ": " << errno << std::endl;
+  }
+
+  console::Uninitialize();
 
   return result;
 }
