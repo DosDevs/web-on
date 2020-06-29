@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "configuration.h"
 #include "httpd.h"
 
 std::unique_ptr<webon::httpd> Global_Httpd;
@@ -25,7 +26,8 @@ void signalHandler(int signal)
 
 int main()
 {
-  Global_Httpd = std::make_unique<webon::httpd>(webon::address::Port16{8080});
+  webon::Configuration configuration{webon::address::Port16{8080}};
+  Global_Httpd = std::make_unique<webon::httpd>(std::move(configuration));
 
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = signalHandler;

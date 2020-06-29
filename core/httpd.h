@@ -6,6 +6,7 @@
 #include <errno.h>
 
 #include "address.h"
+#include "configuration.h"
 #include "request.h"
 
 namespace webon
@@ -18,8 +19,7 @@ namespace webon
     private:
       typedef uint32_t (*socket_api)();
 
-      address::IPv4 _address;
-      address::Port16 _port;
+      Configuration _configuration;
       int _socket;
 
       std::list<std::thread> _threads;
@@ -30,10 +30,7 @@ namespace webon
       int accept(IPv4& client_address, Port16& client_port) const;
 
     public:
-      explicit httpd(address::IPv4 address, address::Port16 port);
-      explicit httpd(address::IPv4 address);
-      explicit httpd(address::Port16 port);
-      explicit httpd();
+      explicit httpd(Configuration&& configuration);
       ~httpd();
 
       int Start();

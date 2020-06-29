@@ -35,32 +35,8 @@ namespace {
   }
 }
 
-httpd::httpd(address::IPv4 address, address::Port16 port):
-    _address{address},
-    _port{port},
-    _socket{-1},
-    _threads{}
-{}
-
-httpd::httpd(address::IPv4 address):
-    _address{address},
-    _port{80},
-    _socket{-1},
-    _threads{}
-{}
-
-httpd::httpd(address::Port16 port):
-    _address{},
-    _port{port},
-    _socket{-1},
-    _threads{}
-{}
-
-httpd::httpd():
-    _address{},
-    _port{80},
-    _socket{-1},
-    _threads{}
+httpd::httpd(Configuration&& configuration):
+    _configuration{configuration}
 {}
 
 httpd::~httpd()
@@ -84,8 +60,8 @@ int httpd::bind() const
 {
   sockaddr_in address {0};
   address.sin_family = AF_INET;
-  address.sin_port = htons(_port);
-  address.sin_addr.s_addr = htonl(_address);
+  address.sin_port = htons(_configuration.port());
+  address.sin_addr.s_addr = htonl(_configuration.ip_address());
 
   return invoke_socket_api("binding socket", false, &::bind, _socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 }
@@ -145,7 +121,7 @@ int httpd::Start()
     return r;
   }
 
-  std::cout << "Now listening on port " << uint16_t(_port) << "." << std::endl;
+  std::cout << "Now listening on port " << uint16_t(_configuration.port()) << "." << std::endl;
 
   console::Initialize();
   int sleep_micros = 0;
@@ -180,7 +156,7 @@ int httpd::Start()
       continue;
     }
 
-    Worker worker{_address, _port, client_address, client_port, r};
+    Worker worker{_configuration.ip_address(), _configuration.port(), client_address, client_port, r};
     _threads.push_back(std::thread(&Worker::Thread_Main, std::move(worker)));
   }
 
