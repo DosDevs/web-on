@@ -7,6 +7,8 @@
 
 namespace webon
 {
+  class Ini_File;
+
   class Configuration
   {
     private:
@@ -23,6 +25,7 @@ namespace webon
       Configuration(address::IPv4 ip_address, address::Port16 port);
       Configuration(address::IPv4 ip_address);
       Configuration(address::Port16 port);
+      Configuration(Ini_File const& ini_file);
       Configuration();
 
       Configuration(uint16_t port):

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -9,6 +10,7 @@
 #include <unistd.h>
 
 #include "configuration.h"
+#include "ini-file.h"
 #include "httpd.h"
 
 std::unique_ptr<webon::httpd> Global_Httpd;
@@ -26,7 +28,17 @@ void signalHandler(int signal)
 
 int main()
 {
-  webon::Configuration configuration{webon::address::Port16{8080}};
+  std::ifstream config_file_stream{"webon.ini"};
+  webon::Ini_File ini_file;
+
+  config_file_stream >> ini_file;
+  if (ini_file.Is_Empty())
+  {
+    std::cout << "Cannot read configuration." << std::endl;
+    return 0;
+  }
+
+  webon::Configuration configuration{ini_file};
   Global_Httpd = std::make_unique<webon::httpd>(std::move(configuration));
 
   struct sigaction sigIntHandler;

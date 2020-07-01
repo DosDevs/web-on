@@ -1,6 +1,8 @@
 #ifndef WEBON__UTILITY_H__INCLUDED
 #define WEBON__UTILITY_H__INCLUDED
 
+#include <iostream>
+
 #define ever (;;)
 
 #define SHOW(N)                                         \
