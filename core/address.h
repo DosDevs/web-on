@@ -3,13 +3,18 @@
 
 #include <cstdint>
 #include <list>
+#include <map>
 #include <string>
 #include <thread>
 
 #include <netinet/in.h>
 
+#include "url.h"
+#include "utility.h"
+
 namespace webon
 {
+  using std::map;
   using std::string;
 
   namespace address

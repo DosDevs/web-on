@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include "request.h"
+#include "response.h"
 #include "utility.h"
 
 using webon::Worker;
@@ -63,10 +64,11 @@ void Worker::End_All()
 void Worker::go() const
 {
   bool done = false;
+
   while (!done)
   {
-    std::unique_ptr<Request> request;
-    string line;
+    std::unique_ptr<Request> request{};
+    string line{};
 
     for ever
     {
@@ -114,7 +116,12 @@ void Worker::go() const
     if (request)
     {
       std::cout << "[" << _handle << "] Request:" << *request << std::endl;
+
+      auto const response = request->Execute();
+      std::cout << "[" << _handle << "] Response:" << response << std::endl;
     }
   }
+
+  std::cout << "[" << _handle << "] Worker is shutting down." << std::endl;
 }
 

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "address.h"
 #include "configuration.h"
 #include "ini-file.h"
 #include "httpd.h"
@@ -28,6 +29,8 @@ void signalHandler(int signal)
 
 int main()
 {
+  auto url { webon::address::URL::Parse("http://cplusplus.com/reference/string/string/?kw=string") };
+
   std::ifstream config_file_stream{"webon.ini"};
   webon::Ini_File ini_file;
 
