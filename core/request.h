@@ -26,6 +26,7 @@ namespace webon
   class Request
   {
     private:
+      string const _www_root;
       string const _protocol;
       map<string, string> _headers;
       vector<string> _content;
@@ -36,9 +37,10 @@ namespace webon
       static bool Parse_First_Line(string_view first_line, string& method, string& protocol);
       static bool Parse_Header(string_view line, string& header, string& value);
 
-      static Request_Ptr Create(string&& first_line);
+      static Request_Ptr Create(string const& www_root, string&& first_line);
 
-      Request(string&& protocol):
+      Request(string const& www_root, string&& protocol):
+        _www_root{www_root},
         _protocol{std::move(protocol)},
         _headers{},
         _content{}
@@ -48,6 +50,11 @@ namespace webon
 
       virtual Method Get_Method() const = 0;
       virtual Response Execute() const = 0;
+
+      string const& Get_WWW_Root() const
+      {
+        return _www_root;
+      }
 
       string const& Get_Protocol() const
       {

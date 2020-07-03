@@ -3,7 +3,10 @@
 #include <string>
 #include <string_view>
 
+#include <unistd.h>
+
 #include "response.h"
+#include "url.h"
 #include "utility.h"
 
 namespace webon
@@ -23,6 +26,8 @@ namespace webon
 
       Method Get_Method() const override { return Method::GET; }
       Response Execute() const override;
+
+      string Get_Resource_File_Name(address::URL const& url) const;
   };
 
   class HEAD_Request: public Request
@@ -96,7 +101,7 @@ namespace webon
     return split(line, ':', header, value);
   }
 
-  Request_Ptr Request::Create(string&& first_line)
+  Request_Ptr Request::Create(string const& www_root, string&& first_line)
   {
     string method, protocol;
 
@@ -105,7 +110,7 @@ namespace webon
 
     if (method == "GET")
     {
-      return Request_Ptr{new (std::nothrow) GET_Request(std::move(protocol))};
+      return Request_Ptr{new (std::nothrow) GET_Request(www_root, std::move(protocol))};
     }
 
     return nullptr;
@@ -133,7 +138,34 @@ namespace webon
   Response GET_Request::Execute() const
   {
     Response response{Get_Method(), Get_Protocol(), *this};
+
+    // Assume GET is only for /.
+    auto url { address::URL::Parse("/") };
+
+    string const file_name = Get_Resource_File_Name(url);
+    string const file_contents = Read_File(file_name);
+
+    response.Set_Status(file_contents.empty()? "404" : "200 OK");
+    response.Add(file_contents);
+
     return response;
+  }
+
+  string GET_Request::Get_Resource_File_Name(address::URL const& url) const
+  {
+    string file_name_base = Get_WWW_Root() +
+          ((url.Get_Resource() == "/")? "/index": url.Get_Resource());
+
+    string file_name = file_name_base + ".html";
+    if (File_Is_Accesible(file_name))
+      return file_name;
+
+    file_name = file_name_base + ".htm";
+    if (File_Is_Accesible(file_name))
+      return file_name;
+
+    file_name.clear();
+    return file_name;
   }
 }  // namespace webon
 

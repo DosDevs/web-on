@@ -88,28 +88,6 @@ int httpd::accept(IPv4& client_address, Port16& client_port) const
   return result;
 }
 
-int httpd::Stop()
-{ 
-  Worker::End_All();
-
-  for (auto& thread: _threads)
-    thread.join();
-
-  _threads.clear();
-  int result = 0;
-
-  if (_socket != -1)
-  {
-    std::cout << "Closing socket " << _socket << "." << std::endl;
-    result = invoke_socket_api("closing socket", false, &::close, _socket);
-    _socket = -1;
-  }
-
-  console::Uninitialize();
-
-  return result;
-}
-
 int httpd::Start()
 {
   int r;
@@ -156,11 +134,41 @@ int httpd::Start()
       continue;
     }
 
-    Worker worker{_configuration.ip_address(), _configuration.port(), client_address, client_port, r};
+    Worker worker {
+      _configuration.www_root(),
+      _configuration.ip_address(),
+      _configuration.port(),
+      client_address,
+      client_port,
+      r
+    };
+
     _threads.push_back(std::thread(&Worker::Thread_Main, std::move(worker)));
   }
 
   Stop();
   return 0;
+}
+
+int httpd::Stop()
+{ 
+  Worker::End_All();
+
+  for (auto& thread: _threads)
+    thread.join();
+
+  _threads.clear();
+  int result = 0;
+
+  if (_socket != -1)
+  {
+    std::cout << "Closing socket " << _socket << "." << std::endl;
+    result = invoke_socket_api("closing socket", false, &::close, _socket);
+    _socket = -1;
+  }
+
+  console::Uninitialize();
+
+  return result;
 }
 

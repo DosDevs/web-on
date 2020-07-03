@@ -1,7 +1,10 @@
 #ifndef WEBON__UTILITY_H__INCLUDED
 #define WEBON__UTILITY_H__INCLUDED
 
+#include <fstream>
 #include <iostream>
+
+#include <unistd.h>
 
 #define ever (;;)
 
@@ -21,27 +24,6 @@ namespace webon
   inline constexpr char DEL = 127;
   inline constexpr char SPACES[] = { SP, HT, 0 };
   inline constexpr char CRLF[] = { CR, LF, 0 };
-
-  inline constexpr bool String_Begins_With(string_view a, string_view b)
-  {
-    return ((a.length() >= b.length()) && (a.substr(0, b.length()) == b));
-  }
-
-  inline constexpr bool String_Ends_With(string_view a, string_view b)
-  {
-    return ((a.length() >= b.length()) && (a.substr(a.length() - b.length()) == b));
-  }
-
-  inline constexpr string_view trim(string_view s)
-  {
-    auto const first = s.find_first_not_of(SPACES);
-    auto const last = s.find_last_not_of(SPACES);
-
-    if ((first == string::npos) || (last == string::npos))
-      return "";
-
-    return s.substr(first, last - first + 1);
-  }
 
   inline constexpr bool is_char(int value)
   {
@@ -132,6 +114,55 @@ namespace webon
     return false;
   }
 
+  inline bool File_Is_Accesible(string const& file)
+  {
+    return (access(file.c_str(), F_OK) == 0);
+  }
+
+  inline string Read_File(string const& file)
+  {
+    string contents{};
+    std::ifstream stream{file};
+
+    if (!stream)
+      return contents;
+
+    if (!stream.seekg(0, std::ios_base::end))
+      return contents;
+
+    auto file_size = stream.tellg();
+
+    if (!stream.seekg(0, std::ios_base::beg))
+      return contents;
+
+    contents.resize(file_size);
+
+    if (!stream.read(&contents[0], file_size))
+      contents.clear();
+
+    return contents;
+  }
+
+  inline constexpr bool String_Begins_With(string_view a, string_view b)
+  {
+    return ((a.length() >= b.length()) && (a.substr(0, b.length()) == b));
+  }
+
+  inline constexpr bool String_Ends_With(string_view a, string_view b)
+  {
+    return ((a.length() >= b.length()) && (a.substr(a.length() - b.length()) == b));
+  }
+
+  inline constexpr string_view trim(string_view s)
+  {
+    auto const first = s.find_first_not_of(SPACES);
+    auto const last = s.find_last_not_of(SPACES);
+
+    if ((first == string::npos) || (last == string::npos))
+      return "";
+
+    return s.substr(first, last - first + 1);
+  }
 }  // namespace webon
 
 #endif  // WEBON__UTILITY_H__INCLUDED

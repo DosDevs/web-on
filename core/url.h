@@ -49,6 +49,11 @@ namespace webon
         operator bool() const { return !_namespace.empty(); }
         string Get_Namespace() const override { return _namespace; }
         string Get_Name() const override { return _namespace; }
+
+        string const& Get_Host() const { return _host; }
+        string const& Get_Port() const { return _port; }
+        string const& Get_Resource() const { return _resource; }
+        map<string, string> const& Get_Kvps() const { return _kvps; }
     };
   }  // namespace address
 }  // namespace webon
